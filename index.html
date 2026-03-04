@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基于中小型混动叉车增程系统设计及其控制策略研究</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", Georgia, serif;
+      background: #f4f1eb;
+      color: #2c2c2c;
+      line-height: 1.8;
+    }
+
+    /* ===== Nav ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(15, 30, 55, 0.96);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0 1rem;
+      height: 52px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.35);
+    }
+    nav a {
+      color: #c9d6e8;
+      text-decoration: none;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      padding: 0 0.9rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      border-bottom: 3px solid transparent;
+      transition: color .25s, border-color .25s;
+    }
+    nav a:hover { color: #fff; border-bottom-color: #4a90d9; }
+
+    /* ===== Sections ===== */
+    section { padding: 5rem 1.5rem; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ===== Cover ===== */
+    #cover {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f1e37 0%, #163a6b 55%, #1e5799 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+    }
+    #cover .cover-inner { max-width: 780px; }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 3px;
+      padding: 0.3rem 1rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      color: #b8d4f0;
+    }
+    #cover h1 {
+      font-size: clamp(1.55rem, 4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.45;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,.4);
+    }
+    #cover h2 {
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      font-weight: 400;
+      color: #90b8df;
+      margin-bottom: 3rem;
+      font-style: italic;
+    }
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .cover-meta-item {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 0.7rem 1.4rem;
+      min-width: 160px;
+    }
+    .cover-meta-item .label {
+      font-size: 0.72rem;
+      color: #7aa8cc;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
+    }
+    .cover-meta-item .value {
+      font-size: 0.97rem;
+      color: #e0ecf8;
+    }
+    .scroll-hint {
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: #6a98be;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* ===== Section Headers ===== */
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .section-number {
+      display: inline-block;
+      width: 36px; height: 36px;
+      background: #163a6b;
+      color: #fff;
+      border-radius: 50%;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.85rem;
+      line-height: 36px;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+    .section-header h2 {
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      color: #0f1e37;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+    .section-header .en {
+      font-size: 0.82rem;
+      color: #7a8fa8;
+      font-style: italic;
+      font-family: Georgia, serif;
+    }
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #163a6b, #4a90d9);
+      margin: 0.8rem auto 0;
+      border-radius: 2px;
+    }
+
+    /* ===== Abstract ===== */
+    #abstract { background: #fff; }
+    .abstract-box {
+      background: #f8f9fc;
+      border-left: 4px solid #163a6b;
+      border-radius: 0 8px 8px 0;
+      padding: 1.6rem 2rem;
+      margin-bottom: 2rem;
+    }
+    .abstract-box h3 {
+      font-size: 0.9rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #163a6b;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+    }
+    .abstract-box p { font-size: 0.95rem; color: #444; }
+    .keywords {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .keywords strong { color: #163a6b; }
+    .kw-tag {
+      display: inline-block;
+      background: #e8eef7;
+      color: #163a6b;
+      border-radius: 3px;
+      padding: 0.15rem 0.55rem;
+      margin: 0.2rem 0.2rem 0 0;
+      font-size: 0.82rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    /* ===== Introduction ===== */
+    #introduction { background: #f4f1eb; }
+    .intro-subsection {
+      margin-bottom: 2.5rem;
+    }
+    .intro-subsection h3 {
+      font-size: 1.05rem;
+      color: #163a6b;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #d0daea;
+    }
+    .intro-subsection p {
+      font-size: 0.93rem;
+      color: #444;
+      margin-bottom: 0.7rem;
+    }
+    .intro-subsection ul {
+      padding-left: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .intro-subsection li {
+      font-size: 0.9rem;
+      color: #444;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Literature review cards */
+    .lit-review-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.2rem 0;
+    }
+    .lit-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+    .lit-card.domestic { border-top: 4px solid #163a6b; }
+    .lit-card.foreign  { border-top: 4px solid #4a90d9; }
+    .lit-card h4 {
+      font-size: 0.92rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #163a6b;
+      margin-bottom: 0.7rem;
+    }
+    .lit-card.foreign h4 { color: #1e5799; }
+    .lit-card ul { padding-left: 1.3rem; }
+    .lit-card li { font-size: 0.86rem; color: #555; margin-bottom: 0.45rem; }
+    .problem-box {
+      background: #fff8e1;
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.4rem;
+      margin-top: 1.2rem;
+    }
+    .problem-box p { font-size: 0.9rem; color: #555; }
+    .problem-box strong { color: #b45309; }
+
+    /* Chapter structure list */
+    .chapter-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 0.8rem;
+    }
+    .chapter-list li {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    }
+    .chapter-num {
+      min-width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #163a6b, #4a90d9);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .chapter-list li p { font-size: 0.9rem; color: #444; }
+
+    /* ===== Working Condition Analysis ===== */
+    #condition { background: #fff; }
+    .condition-subsection {
+      margin-bottom: 2.5rem;
+    }
+    .condition-subsection h3 {
+      font-size: 1.05rem;
+      color: #163a6b;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #d0daea;
+    }
+    .condition-subsection p {
+      font-size: 0.93rem;
+      color: #444;
+      margin-bottom: 0.7rem;
+    }
+    .condition-highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.2rem 0;
+    }
+    .condition-highlight-item {
+      background: #f0f4fa;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      border-left: 3px solid #163a6b;
+    }
+    .condition-highlight-item .ch-label {
+      font-size: 0.78rem;
+      color: #6a8aaa;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin-bottom: 0.3rem;
+    }
+    .condition-highlight-item .ch-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #163a6b;
+    }
+    .condition-highlight-item .ch-unit {
+      font-size: 0.8rem;
+      color: #6a8aaa;
+      margin-left: 0.2rem;
+    }
+
+    /* Comparison / data tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.88rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .data-table th {
+      background: #163a6b;
+      color: #fff;
+      padding: 0.7rem 1rem;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .data-table td {
+      padding: 0.6rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid #e5e9f0;
+      color: #444;
+    }
+    .data-table tr:nth-child(even) td { background: #f8f9fc; }
+    .data-table td.selected {
+      color: #2e7d32;
+      font-weight: 700;
+    }
+    .data-table td.check { color: #2e7d32; font-size: 1.1rem; }
+    .data-table td.cross { color: #c0392b; font-size: 1.1rem; }
+    .table-caption {
+      font-size: 0.8rem;
+      color: #7a8fa8;
+      text-align: center;
+      margin-top: 0.4rem;
+      font-style: italic;
+      font-family: Georgia, serif;
+    }
+
+    /* ===== Background ===== */
+    #background { background: #f4f1eb; }
+    .bg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .bg-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.6rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border-top: 4px solid #163a6b;
+    }
+    .bg-card .icon {
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+    }
+    .bg-card h3 {
+      font-size: 1rem;
+      color: #163a6b;
+      margin-bottom: 0.5rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .bg-card p { font-size: 0.88rem; color: #555; }
+
+    /* ===== System Design ===== */
+    #system { background: #fff; }
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      margin: 2rem 0;
+    }
+    .arch-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    .arch-box {
+      background: linear-gradient(135deg, #163a6b, #1e5799);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      text-align: center;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.82rem;
+      min-width: 110px;
+      box-shadow: 0 3px 10px rgba(22,58,107,.3);
+    }
+    .arch-box.secondary {
+      background: linear-gradient(135deg, #2e7d32, #388e3c);
+      min-width: 100px;
+    }
+    .arch-box.accent {
+      background: linear-gradient(135deg, #b45309, #d97706);
+      min-width: 100px;
+    }
+    .arch-arrow {
+      color: #4a90d9;
+      font-size: 1.3rem;
+      user-select: none;
+    }
+    .arch-arrow.down {
+      display: block;
+      text-align: center;
+      font-size: 1.5rem;
+      color: #4a90d9;
+      margin: 0.15rem 0;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .spec-card {
+      background: #f0f4fa;
+      border-radius: 8px;
+      padding: 1.2rem;
+      border-left: 3px solid #4a90d9;
+    }
+    .spec-card .spec-label {
+      font-size: 0.78rem;
+      color: #6a8aaa;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin-bottom: 0.3rem;
+    }
+    .spec-card .spec-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #163a6b;
+    }
+    .spec-card .spec-unit {
+      font-size: 0.8rem;
+      color: #6a8aaa;
+      margin-left: 0.2rem;
+    }
+
+    /* Parameter matching subsection */
+    .param-subsection {
+      margin-top: 2.5rem;
+    }
+    .param-subsection h3 {
+      font-size: 1.05rem;
+      color: #163a6b;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #d0daea;
+    }
+    .param-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1rem;
+    }
+    .param-card {
+      background: #f8f9fc;
+      border-radius: 10px;
+      padding: 1.4rem 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      border-top: 3px solid #4a90d9;
+    }
+    .param-card.motor-card  { border-top-color: #2e7d32; }
+    .param-card.engine-card { border-top-color: #b45309; }
+    .param-card.battery-card{ border-top-color: #163a6b; }
+    .param-card h4 {
+      font-size: 0.95rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #163a6b;
+      margin-bottom: 0.6rem;
+    }
+    .param-card .formula-block {
+      background: #eef2fa;
+      border-radius: 5px;
+      padding: 0.7rem 1rem;
+      margin: 0.6rem 0;
+      font-family: "Courier New", "Consolas", monospace;
+      font-size: 0.82rem;
+      color: #163a6b;
+      overflow-x: auto;
+    }
+    .param-card p { font-size: 0.88rem; color: #555; margin-bottom: 0.35rem; }
+    .param-result {
+      margin-top: 0.7rem;
+      padding: 0.5rem 0.8rem;
+      background: #e8f5e9;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      color: #2e7d32;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-weight: 600;
+    }
+
+    /* ===== Control Strategy ===== */
+    #control { background: #f4f1eb; }
+    .strategy-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      background: #fff;
+      border: 2px solid #d0d8e8;
+      border-radius: 6px;
+      padding: 0.5rem 1.1rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all .2s;
+      color: #555;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: #163a6b;
+      border-color: #163a6b;
+      color: #fff;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .strategy-detail {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.8rem 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .strategy-detail h3 {
+      color: #163a6b;
+      margin-bottom: 0.8rem;
+      font-size: 1.05rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .strategy-detail p { font-size: 0.9rem; color: #444; margin-bottom: 0.7rem; }
+    .strategy-detail ul { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    .strategy-detail li { font-size: 0.9rem; color: #444; margin-bottom: 0.4rem; }
+    .formula-block {
+      background: #f0f4fa;
+      border-radius: 6px;
+      padding: 1rem 1.4rem;
+      margin: 1rem 0;
+      font-family: "Courier New", "Consolas", monospace;
+      font-size: 0.9rem;
+      color: #163a6b;
+      overflow-x: auto;
+    }
+    .formula-caption {
+      font-size: 0.78rem;
+      color: #7a8fa8;
+      text-align: center;
+      margin-top: 0.4rem;
+      font-style: italic;
+    }
+
+    /* ===== Results ===== */
+    #results { background: #fff; }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .result-card {
+      background: #f8f9fc;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .result-card h3 {
+      font-size: 0.95rem;
+      color: #163a6b;
+      margin-bottom: 0.7rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #e5e9f0;
+      font-size: 0.87rem;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-row .metric-name { color: #555; }
+    .metric-row .metric-val {
+      font-weight: 700;
+      color: #163a6b;
+    }
+    .metric-row .metric-val.good { color: #2e7d32; }
+    .metric-row .metric-val.warn { color: #b45309; }
+    .bar-chart { margin-top: 1rem; }
+    .bar-item { margin-bottom: 0.75rem; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #555;
+      margin-bottom: 0.25rem;
+    }
+    .bar-track {
+      background: #e5e9f0;
+      border-radius: 4px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #163a6b, #4a90d9);
+      transition: width 1s ease;
+    }
+
+    /* ===== Conclusion ===== */
+    #conclusion { background: #f4f1eb; }
+    .conclusion-list {
+      counter-reset: clist;
+      list-style: none;
+      padding: 0;
+    }
+    .conclusion-list li {
+      counter-increment: clist;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+    .conclusion-list li::before {
+      content: counter(clist);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      background: #163a6b;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+    .conclusion-list li p { font-size: 0.93rem; color: #444; }
+
+    .innovation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+    .innovation-card {
+      background: linear-gradient(135deg, #163a6b 0%, #1e5799 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+    }
+    .innovation-card .i-num {
+      font-size: 2rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.25);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .innovation-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .innovation-card p { font-size: 0.83rem; color: #b8d4f0; }
+
+    /* Prospects section */
+    .prospects-section {
+      margin-top: 3rem;
+    }
+    .prospects-section h3 {
+      color: #163a6b;
+      margin-bottom: 1.2rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 1.1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #d0daea;
+    }
+    .prospect-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.1rem;
+    }
+    .prospect-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.3rem 1.4rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+      border-top: 3px solid #4a90d9;
+    }
+    .prospect-card .p-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.6rem;
+    }
+    .prospect-card h4 {
+      font-size: 0.9rem;
+      color: #163a6b;
+      margin-bottom: 0.45rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .prospect-card p { font-size: 0.83rem; color: #555; }
+
+    /* ===== References ===== */
+    #references { background: #fff; }
+    .ref-list { list-style: none; padding: 0; }
+    .ref-list li {
+      font-size: 0.87rem;
+      color: #555;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #eee;
+      padding-left: 2.2rem;
+      position: relative;
+    }
+    .ref-list li::before {
+      content: attr(data-num);
+      position: absolute;
+      left: 0;
+      color: #163a6b;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      background: #0f1e37;
+      color: #7a98b8;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 0.82rem;
+    }
+    footer strong { color: #c9d6e8; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      nav a { font-size: 0.72rem; padding: 0 0.45rem; }
+      .arch-box { font-size: 0.75rem; padding: 0.55rem 0.8rem; min-width: 80px; }
+      .abstract-box { padding: 1.2rem 1.2rem; }
+      .lit-review-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <a href="#cover">封面</a>
+  <a href="#abstract">摘要</a>
+  <a href="#introduction">绪论</a>
+  <a href="#condition">叉车工况</a>
+  <a href="#background">研究背景</a>
+  <a href="#system">系统设计</a>
+  <a href="#control">控制策略</a>
+  <a href="#results">仿真结果</a>
+  <a href="#conclusion">结论</a>
+  <a href="#references">参考文献</a>
+</nav>
+
+<!-- ===== Cover ===== -->
+<section id="cover">
+  <div class="cover-inner">
+    <div class="cover-badge">硕士学位论文 · Master's Thesis</div>
+    <h1>基于中小型混动叉车增程系统设计<br/>及其控制策略研究</h1>
+    <h2>Design and Control Strategy Research of Extended Range System<br/>for Small and Medium-Sized Hybrid Forklifts</h2>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <div class="label">研究方向</div>
+        <div class="value">车辆工程 / 混合动力</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">学位类型</div>
+        <div class="value">工学硕士</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">研究领域</div>
+        <div class="value">增程系统 · 能量管理</div>
+      </div>
+    </div>
+    <div class="scroll-hint">↓ 向下滚动浏览全文</div>
+  </div>
+</section>
+
+<!-- ===== Abstract ===== -->
+<section id="abstract">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">一</div>
+      <h2>摘　要</h2>
+      <div class="en">Abstract</div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="abstract-box">
+      <h3>中文摘要</h3>
+      <p>
+        随着"双碳"目标的持续推进及工业物流行业对绿色化转型需求的不断增长，中小型叉车的电动化与节能化已成为工程机械领域的重要研究课题。然而，纯电动叉车续驶里程有限、充电时间长的问题制约了其在连续高强度作业场景中的推广应用。为此，本文以中小型叉车为研究对象，提出并设计了一套串联式增程系统方案，配备发动机—发电机组作为增程器，通过优化动力系统参数匹配与能量管理控制策略，实现对整车动力性、经济性与排放性能的综合提升。
+      </p>
+      <p style="margin-top:0.7rem">
+        本文首先对增程系统的总体结构进行了规划，并依据典型工况需求完成了关键部件的参数选型。在控制策略层面，提出了基于规则的分层控制策略，并引入等效燃油消耗最小化策略（ECMS）对发动机工作点进行实时寻优，同时设计了针对电池荷电状态（SOC）的主动维护算法，保障系统在高强度工况下的能量持续性。最后，基于 MATLAB/Simulink 平台搭建了整车系统仿真模型，结合叉车典型作业循环工况对所提策略进行了验证，仿真结果表明本文所提方法可有效降低油耗、改善排放，同时保证了良好的动力响应特性。
+      </p>
+      <div class="keywords">
+        <strong>关键词：</strong>
+        <span class="kw-tag">增程式电动叉车</span>
+        <span class="kw-tag">混合动力系统</span>
+        <span class="kw-tag">能量管理策略</span>
+        <span class="kw-tag">等效燃油消耗最小化</span>
+        <span class="kw-tag">SOC 维护</span>
+        <span class="kw-tag">MATLAB/Simulink</span>
+      </div>
+    </div>
+
+    <div class="abstract-box" style="border-left-color:#4a90d9;">
+      <h3 style="color:#1e5799;">ABSTRACT</h3>
+      <p>
+        With the continuous advancement of "dual carbon" targets and the increasing demand for green transformation in the industrial logistics sector, the electrification and energy saving of small and medium-sized forklifts have become important research topics in the engineering machinery field. However, the limited driving range and long charging time of pure electric forklifts restrict their application in continuous high-intensity operations. Therefore, this paper proposes and designs a series-type extended range system for small and medium-sized forklifts, equipped with an engine-generator unit as the range extender. By optimizing the powertrain parameter matching and energy management control strategy, comprehensive improvements in vehicle dynamics, fuel economy, and emission performance are achieved.
+      </p>
+      <p style="margin-top:0.7rem">
+        This paper first plans the overall structure of the extended range system and completes the parameter selection of key components based on typical operating condition requirements. At the control strategy level, a rule-based hierarchical control strategy is proposed, and the Equivalent Consumption Minimization Strategy (ECMS) is introduced to optimize the engine operating point in real time. An active SOC maintenance algorithm is also designed to ensure energy continuity under high-intensity conditions. Finally, a vehicle system simulation model is built on the MATLAB/Simulink platform, and the proposed strategy is validated against typical forklift operating cycle conditions. Simulation results show that the proposed method can effectively reduce fuel consumption, improve emissions, while ensuring good dynamic response characteristics.
+      </p>
+      <div class="keywords">
+        <strong>Keywords: </strong>
+        <span class="kw-tag">Extended range electric forklift</span>
+        <span class="kw-tag">Hybrid power system</span>
+        <span class="kw-tag">Energy management strategy</span>
+        <span class="kw-tag">ECMS</span>
+        <span class="kw-tag">SOC maintenance</span>
+        <span class="kw-tag">MATLAB/Simulink</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Introduction ===== -->
+<section id="introduction">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">二</div>
+      <h2>绪　论</h2>
+      <div class="en">Introduction</div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- 1.1 Research Background and Significance -->
+    <div class="intro-subsection">
+      <h3>1.1　研究背景与意义</h3>
+      <p>
+        在"碳达峰、碳中和"（"双碳"）战略目标的持续推动下，工业物流装备的绿色化转型已成为制造业高质量发展的必然方向。作为工业物流领域的核心搬运设备，叉车行业正面临深刻的能源结构变革。当前，内燃叉车在全球叉车市场中占比约 65%，但日趋严格的排放法规（欧盟 Stage V、国内非道路移动机械排放标准升级）对传统燃油叉车形成了强烈的政策压力，推动行业加速向电动化方向转型。
+      </p>
+      <p>
+        纯电动叉车虽然具备零排放、运行噪声低等优势，但受制于当前动力电池能量密度水平，其单次充电续驶里程通常仅能支撑 4–6 小时的连续作业，而充电时间长达 4–8 小时，在港口、冷链物流等需要连续多班次（16–24 小时）高强度作业的场景中应用受限。增程式电动叉车作为纯电动叉车向全面电动化过渡的优选方案，通过搭载小功率发动机—发电机组（增程器），在不改变电驱系统优势的前提下，有效突破了续航里程瓶颈。
+      </p>
+      <p>
+        增程式架构使发动机与驱动轮完全机械解耦，发动机可持续运行于高效、低排放的最优工作区间，兼顾了续航能力与电驱系统的高传动效率。然而，现有研究大多针对增程式乘用车（如增程版理想 ONE）或商用卡车，专门面向叉车特殊工况（频繁启停、间歇重载、作业场地固定）的增程系统设计与控制策略研究仍相当匮乏，缺乏系统化的部件参数匹配方法和高效的能量管理策略。本论文的研究意义正在于填补这一专项研究空白，为叉车专用增程系统的工程化应用提供理论支撑和方法参考。
+      </p>
+    </div>
+
+    <!-- 1.2 State of the Art -->
+    <div class="intro-subsection">
+      <h3>1.2　国内外研究现状</h3>
+      <div class="lit-review-grid">
+        <div class="lit-card domestic">
+          <h4>🇨🇳 国内研究现状</h4>
+          <ul>
+            <li><strong>混合动力叉车：</strong>国内以合力、林德（中国）等企业为主导，锂电叉车逐步替代传统铅酸叉车；</li>
+            <li><strong>动力系统参数匹配：</strong>李朝杰等（合肥工业大学，2018）研究了串联混动叉车动力系统参数匹配方法，提出了兼顾动力性与经济性的协同选型方案；</li>
+            <li><strong>增程系统研究：</strong>国内增程研究集中于电动乘用车领域（如增程版理想 ONE），叉车专用增程系统研究文献较少，缺乏体系化成果；</li>
+            <li><strong>能量管理策略：</strong>国内在 ECMS、规则策略等方面研究较多（林歆悠等，2019），但针对叉车间歇重载工况的专项研究不足，现有策略直接移植存在适应性问题。</li>
+          </ul>
+        </div>
+        <div class="lit-card foreign">
+          <h4>🌐 国外研究现状</h4>
+          <ul>
+            <li><strong>燃料电池叉车：</strong>Toyota、Jungheinrich 等国际企业已推出氢燃料电池叉车产品，但系统成本较高，商业化规模有限；</li>
+            <li><strong>ECMS 基础框架：</strong>Paganelli 等（2000）提出 ECMS 基本理论框架，奠定了混合动力实时优化策略的研究基础；</li>
+            <li><strong>自适应 ECMS：</strong>Musardo 等（2005）提出自适应 ECMS（A-ECMS），引入等效因子动态更新机制，提升了策略对工况变化的鲁棒性；</li>
+            <li><strong>预测能量管理：</strong>Sun 等（2015）将车速预测引入混合动力能量管理，显著提高了预见性控制精度；</li>
+            <li><strong>多目标部件优化：</strong>Xu 等（2015）研究了燃料电池汽车的多目标部件协同优化方法，为本文参数匹配提供了方法论参考。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="problem-box">
+        <p><strong>现存问题：</strong>现有研究多针对乘用车或商用车工况，针对叉车特殊工况（频繁启停、间歇重载、场地固定、低速重载）的增程系统设计与控制研究仍不充分。一方面，缺乏面向叉车工况需求的系统化部件参数匹配方法；另一方面，现有 ECMS 及规则策略均未充分考虑叉车作业峰均功率比大（约 3.5–4 倍）的特殊性，导致策略移植后 SOC 维护效果不佳、发动机频繁启停、整体能效提升有限。</p>
+      </div>
+    </div>
+
+    <!-- 1.3 Research Content and Structure -->
+    <div class="intro-subsection">
+      <h3>1.3　本文研究内容与章节安排</h3>
+      <p>
+        针对上述研究不足，本文围绕中小型混动叉车增程系统设计与控制策略开展系统性研究，主要研究内容及章节安排如下：
+      </p>
+      <ol class="chapter-list">
+        <li>
+          <div class="chapter-num">一</div>
+          <p><strong>绪论：</strong>介绍研究背景与意义、国内外研究现状及本文研究内容与章节安排，明确研究定位与主要贡献。</p>
+        </li>
+        <li>
+          <div class="chapter-num">二</div>
+          <p><strong>叉车作业工况分析与增程系统总体方案设计：</strong>基于典型叉车作业循环对功率需求特征进行量化分析，完成串联增程系统拓扑构型的论证与选择。</p>
+        </li>
+        <li>
+          <div class="chapter-num">三</div>
+          <p><strong>关键部件参数匹配与整车动力性验证：</strong>建立驱动电机、增程器（发动机+发电机）及动力电池的参数匹配模型，进行整车动力性能指标的仿真验证。</p>
+        </li>
+        <li>
+          <div class="chapter-num">四</div>
+          <p><strong>能量管理控制策略设计：</strong>提出基于规则的分层控制策略、自适应等效因子 ECMS 优化策略及基于 PI 反馈的 SOC 主动维护算法，形成三层次能量管理框架。</p>
+        </li>
+        <li>
+          <div class="chapter-num">五</div>
+          <p><strong>基于 MATLAB/Simulink 的仿真验证与结果分析：</strong>搭建整车仿真模型，以 8 小时典型作业循环工况为测试场景，对多种策略进行横向对比与综合评估。</p>
+        </li>
+        <li>
+          <div class="chapter-num">六</div>
+          <p><strong>结论与展望：</strong>总结本文主要研究成果与创新点，并对后续研究方向（强化学习策略、IoT 预见性 EMS、HIL 实验验证等）进行展望。</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Working Condition Analysis ===== -->
+<section id="condition">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">三</div>
+      <h2>叉车工况分析</h2>
+      <div class="en">Forklift Working Condition Analysis</div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Typical operating cycle -->
+    <div class="condition-subsection">
+      <h3>典型作业循环工况</h3>
+      <p>
+        叉车的典型作业循环由"行走（空载）→ 取货（起升满载）→ 行走（满载）→ 卸货（下降）"四个基本动作单元构成，循环往复。在典型 8 小时作业班次中，一台中型叉车通常完成约 200–300 次完整作业循环。与乘用车工况相比，叉车工况呈现出鲜明的间歇重载、频繁启停特征，对增程系统的功率匹配与能量管理策略提出了特殊要求。
+      </p>
+      <p>
+        <strong>功率需求特点：</strong>叉车起步加速叠加满载起升时峰值功率可达 55 kW，而匀速行驶或空载状态下平均功率仅约 12–15 kW，峰均功率比约为 3.5–4 倍，远高于乘用车（约 2–2.5 倍）。这一特性意味着增程器的额定功率无需覆盖峰值需求，而应以平均功率为设计基准，峰值缺额由动力电池补充。
+      </p>
+
+      <div class="condition-highlights">
+        <div class="condition-highlight-item">
+          <div class="ch-label">平均行驶速度</div>
+          <div class="ch-value">7.5<span class="ch-unit">km/h</span></div>
+        </div>
+        <div class="condition-highlight-item">
+          <div class="ch-label">最高行驶速度</div>
+          <div class="ch-value">19<span class="ch-unit">km/h</span></div>
+        </div>
+        <div class="condition-highlight-item">
+          <div class="ch-label">平均功率需求</div>
+          <div class="ch-value">13.2<span class="ch-unit">kW</span></div>
+        </div>
+        <div class="condition-highlight-item">
+          <div class="ch-label">峰值功率需求</div>
+          <div class="ch-value">55<span class="ch-unit">kW</span></div>
+        </div>
+        <div class="condition-highlight-item">
+          <div class="ch-label">加减速频率</div>
+          <div class="ch-value">5.2<span class="ch-unit">次/min</span></div>
+        </div>
+        <div class="condition-highlight-item">
+          <div class="ch-label">满载率</div>
+          <div class="ch-value">~60<span class="ch-unit">%</span></div>
+        </div>
+      </div>
+
+      <table class="data-table" style="margin-top:1.5rem;">
+        <caption style="caption-side:top;text-align:left;font-size:0.88rem;color:#163a6b;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;font-weight:600;padding-bottom:0.5rem;">
+          表 3-1　叉车典型工况特征参数汇总
+        </caption>
+        <thead>
+          <tr>
+            <th>特征参数</th>
+            <th>数值</th>
+            <th>单位</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>平均行驶速度</td>
+            <td>7.5</td>
+            <td>km/h</td>
+            <td>含停车等待时间均值</td>
+          </tr>
+          <tr>
+            <td>最高行驶速度</td>
+            <td>19</td>
+            <td>km/h</td>
+            <td>叉车额定最高车速</td>
+          </tr>
+          <tr>
+            <td>平均功率需求</td>
+            <td>13.2</td>
+            <td>kW</td>
+            <td>8h 作业班次统计均值</td>
+          </tr>
+          <tr>
+            <td>峰值功率需求</td>
+            <td>55</td>
+            <td>kW</td>
+            <td>起步 + 满载起升叠加</td>
+          </tr>
+          <tr>
+            <td>加减速频率</td>
+            <td>5.2</td>
+            <td>次/min</td>
+            <td>含完整启停循环</td>
+          </tr>
+          <tr>
+            <td>单次循环时间</td>
+            <td>~96</td>
+            <td>s</td>
+            <td>取/卸货完整循环均值</td>
+          </tr>
+          <tr>
+            <td>峰均功率比</td>
+            <td>~4.2</td>
+            <td>—</td>
+            <td>远高于乘用车工况</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="table-caption">数据来源：基于典型 3t 仓储叉车实测作业循环统计</p>
+    </div>
+
+    <!-- Powertrain Configuration Selection -->
+    <div class="condition-subsection">
+      <h3>动力系统构型选择</h3>
+      <p>
+        根据叉车工况特征，对三种主流混合动力拓扑构型进行系统对比分析，以确定最适合中小型叉车应用的动力系统方案。
+      </p>
+
+      <table class="data-table">
+        <caption style="caption-side:top;text-align:left;font-size:0.88rem;color:#163a6b;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;font-weight:600;padding-bottom:0.5rem;">
+          表 3-2　三种混合动力构型对比分析
+        </caption>
+        <thead>
+          <tr>
+            <th>评价维度</th>
+            <th>并联混动<br/><small>Parallel Hybrid</small></th>
+            <th>串联混动<br/><small>Series Hybrid</small></th>
+            <th>混联混动<br/><small>Series-Parallel</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>结构复杂度</td>
+            <td>中等</td>
+            <td class="selected">低</td>
+            <td>高</td>
+          </tr>
+          <tr>
+            <td>适用工况</td>
+            <td>中高速匀速</td>
+            <td class="selected">低速重载 ✓</td>
+            <td>复合工况</td>
+          </tr>
+          <tr>
+            <td>发动机控制自由度</td>
+            <td>受限（与车速耦合）</td>
+            <td class="selected">完全解耦，最优区控制</td>
+            <td>部分解耦</td>
+          </tr>
+          <tr>
+            <td>传动系统</td>
+            <td>机械连接，结构复杂</td>
+            <td class="selected">纯电驱动，结构简洁</td>
+            <td>机械+电气混合</td>
+          </tr>
+          <tr>
+            <td>制造成本</td>
+            <td>中等</td>
+            <td class="selected">较低</td>
+            <td>最高</td>
+          </tr>
+          <tr>
+            <td>能量管理难度</td>
+            <td>中等</td>
+            <td class="selected">低（功率流单向清晰）</td>
+            <td>高</td>
+          </tr>
+          <tr>
+            <td>最终选择</td>
+            <td class="cross">✗</td>
+            <td class="check">✔ 选定</td>
+            <td class="cross">✗</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:1rem;">
+        综合评估结果表明，<strong>串联混动（增程式）构型</strong>最适合中小型叉车应用场景：发动机与驱动轮完全机械解耦，可自由控制发动机工作于最优效率区；纯电驱动系统简化了传动链设计，降低了制造成本；功率流路径清晰，便于实施高效的能量管理策略；对低速重载工况的适应性最优，与叉车实际作业特征高度契合。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Background ===== -->
+<section id="background">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">四</div>
+      <h2>研究背景与意义</h2>
+      <div class="en">Research Background and Significance</div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="bg-grid">
+      <div class="bg-card">
+        <div class="icon">🌿</div>
+        <h3>"双碳"政策驱动</h3>
+        <p>我国明确提出2030年碳达峰、2060年碳中和目标，工业物流装备电动化进程加速，传统燃油叉车面临严格排放法规约束。</p>
+      </div>
+      <div class="bg-card">
+        <div class="icon">⚡</div>
+        <h3>纯电叉车痛点</h3>
+        <p>纯电动叉车受电池能量密度限制，续驶里程约4–6小时，充电时间长达4–8小时，难以满足连续多班次高强度作业场景需求。</p>
+      </div>
+      <div class="bg-card">
+        <div class="icon">🔋</div>
+        <h3>增程技术优势</h3>
+        <p>增程式架构将发动机与驱动轮完全解耦，发动机可稳定运行于高效区间，兼顾续航里程与电动驱动的高效性，适合中小型叉车应用场景。</p>
+      </div>
+      <div class="bg-card">
+        <div class="icon">🏭</div>
+        <h3>市场需求</h3>
+        <p>中小型叉车（1–5 t级）是工业物流领域保有量最大的品类，年销量超百万台，绿色化升级需求巨大，市场潜力显著。</p>
+      </div>
+      <div class="bg-card">
+        <div class="icon">📐</div>
+        <h3>技术挑战</h3>
+        <p>增程系统的部件参数匹配、电池 SOC 实时维护、发动机最优工作点跟踪等核心问题亟待深入研究，缺乏面向叉车工况的专项解决方案。</p>
+      </div>
+      <div class="bg-card">
+        <div class="icon">🎯</div>
+        <h3>研究目标</h3>
+        <p>完成增程系统结构设计与参数匹配；提出适用于叉车工况的分层能量管理策略；基于仿真平台定量评估系统综合性能指标。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== System Design ===== -->
+<section id="system">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">五</div>
+      <h2>增程系统结构设计</h2>
+      <div class="en">Extended Range System Architecture Design</div>
+      <div class="divider"></div>
+    </div>
+
+    <p style="margin-bottom:1.5rem;color:#555;font-size:0.93rem;">
+      本文采用串联式增程拓扑结构。发动机驱动发电机组为动力电池充电或直接向电机供电，驱动电机通过机械传动系统驱动叉车行走及起升机构，实现发动机与驱动轮的完全解耦。
+    </p>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram">
+      <div class="arch-row">
+        <div class="arch-box accent">🛢 发动机<br/><small>Engine</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box accent">⚙️ 发电机<br/><small>Generator</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box" style="background:linear-gradient(135deg,#4a2c82,#6a4ec2)">🔌 DC 母线<br/><small>DC Bus</small></div>
+      </div>
+      <div class="arch-arrow down">↕</div>
+      <div class="arch-row">
+        <div class="arch-box secondary">🔋 动力电池<br/><small>Battery Pack</small></div>
+        <div class="arch-arrow">↔</div>
+        <div class="arch-box" style="background:linear-gradient(135deg,#4a2c82,#6a4ec2)">🔌 DC 母线<br/><small>DC Bus</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box secondary">⚡ 驱动电机<br/><small>Drive Motor</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">🔧 传动系统<br/><small>Drivetrain</small></div>
+      </div>
+      <div class="arch-arrow down">↓</div>
+      <div class="arch-row">
+        <div class="arch-box" style="min-width:200px">🚜 整车（行走 + 起升）<br/><small>Vehicle (Travel + Lifting)</small></div>
+      </div>
+    </div>
+
+    <!-- Key Specs -->
+    <h3 style="color:#163a6b;margin-top:2rem;margin-bottom:1rem;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;">
+      关键部件参数匹配结果
+    </h3>
+    <div class="specs-grid">
+      <div class="spec-card">
+        <div class="spec-label">整车载重</div>
+        <div class="spec-value">3<span class="spec-unit">t</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">驱动电机额定功率</div>
+        <div class="spec-value">22<span class="spec-unit">kW</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">驱动电机峰值功率</div>
+        <div class="spec-value">55<span class="spec-unit">kW</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">发动机额定功率</div>
+        <div class="spec-value">18<span class="spec-unit">kW</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">发电机额定功率</div>
+        <div class="spec-value">20<span class="spec-unit">kW</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">动力电池容量</div>
+        <div class="spec-value">30<span class="spec-unit">kWh</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">电池标称电压</div>
+        <div class="spec-value">96<span class="spec-unit">V</span></div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-label">SOC 工作区间</div>
+        <div class="spec-value">20–90<span class="spec-unit">%</span></div>
+      </div>
+    </div>
+
+    <!-- Parameter Matching Methodology -->
+    <div class="param-subsection">
+      <h3>参数匹配设计方法</h3>
+      <p style="font-size:0.93rem;color:#555;margin-bottom:1rem;">
+        各关键部件参数匹配以叉车典型工况需求为输入，遵循"先电机后增程器再电池"的顺序依次确定，确保各部件协同配合、整体最优。
+      </p>
+      <div class="param-cards">
+        <!-- Drive Motor -->
+        <div class="param-card motor-card">
+          <h4>⚡ 驱动电机参数匹配</h4>
+          <p>根据最大车速（19 km/h）和最大爬坡度（≥20%）计算驱动力需求，推导额定转矩与额定功率：</p>
+          <div class="formula-block">
+T_rated = F_max × r / η_trans<br/>
+P_rated = T_rated × ω_rated / 1000
+          </div>
+          <p>其中 F_max 为最大驱动力，r 为车轮半径，η_trans 为传动效率。</p>
+          <div class="param-result">✓ 选定：额定 22 kW、峰值 55 kW 永磁同步电机（PMSM）</div>
+        </div>
+
+        <!-- Range Extender -->
+        <div class="param-card engine-card">
+          <h4>🛢 增程器参数匹配</h4>
+          <p>以 8 小时作业班次平均功率需求（~13.2 kW）加 20% 设计余量作为增程器额定功率基准：</p>
+          <div class="formula-block">
+P_rex = P_avg × (1 + margin)<br/>
+      = 13.2 × 1.20 ≈ 15.8 kW
+          </div>
+          <p>考虑发动机—发电机组效率（η ≈ 0.85–0.90），向上取整并留余量。</p>
+          <div class="param-result">✓ 选定：18 kW 四缸汽油发动机 + 20 kW 永磁同步发电机</div>
+        </div>
+
+        <!-- Battery Pack -->
+        <div class="param-card battery-card">
+          <h4>🔋 动力电池参数匹配</h4>
+          <p>基于峰值功率补充需求（峰值 55 kW − 增程器 18 kW = 37 kW）及纯电续驶能量需求（≥2h）综合确定：</p>
+          <div class="formula-block">
+E_min = P_avg × t_pure_EV / η_bat<br/>
+      = 13.2 × 2 / 0.95 ≈ 27.8 kWh
+          </div>
+          <p>兼顾 SOC 可用区间（20%–90%，可用率 70%），电池总容量需 ≥ 27.8 / 0.70 ≈ 39.7 kWh，取 30 kWh 磷酸铁锂电池组（考虑较高可用 SOC 区间）。</p>
+          <div class="param-result">✓ 选定：30 kWh 磷酸铁锂（LFP）电池组，96 V / 312 Ah</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Control Strategy ===== -->
+<section id="control">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">六</div>
+      <h2>能量管理控制策略</h2>
+      <div class="en">Energy Management Control Strategy</div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="strategy-tabs">
+      <button class="tab-btn active" onclick="switchTab(event,'tab-rule')">规则控制策略</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-ecms')">ECMS 优化策略</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-soc')">SOC 维护算法</button>
+    </div>
+
+    <div id="tab-rule" class="tab-content active">
+      <div class="strategy-detail">
+        <h3>基于规则的分层控制策略</h3>
+        <p>
+          规则控制策略根据实时功率需求与 SOC 状态，将整车运行模式划分为以下四种工况，并通过状态机逻辑实现模式切换：
+        </p>
+        <ul>
+          <li><strong>纯电模式：</strong>低功率需求且 SOC 充足（&gt;60%）时，仅由电池供电，发动机关闭，降低噪声与排放。</li>
+          <li><strong>增程模式：</strong>中等功率需求或 SOC 进入预警区间（30%–60%），增程器启动，维持 SOC 稳定。</li>
+          <li><strong>功率跟随模式：</strong>高功率需求（峰值）时，电池与增程器同时供电，满足瞬时大功率需求。</li>
+          <li><strong>制动回馈模式：</strong>下坡或减速制动时，驱动电机反转发电，能量回馈至电池。</li>
+        </ul>
+        <div class="formula-block">
+          P_engine = f(SOC, P_demand)<br/>
+          ┌ 0,                      SOC &gt; 0.6 且 P_demand ≤ P_low<br/>
+          │ P_target,               0.3 ≤ SOC ≤ 0.6<br/>
+          └ min(P_eng_max, P_demand), SOC &lt; 0.3
+        </div>
+        <div class="formula-caption">发动机功率分配规则（简化表达）</div>
+      </div>
+    </div>
+
+    <div id="tab-ecms" class="tab-content">
+      <div class="strategy-detail">
+        <h3>等效燃油消耗最小化策略（ECMS）</h3>
+        <p>
+          ECMS 将电能消耗等效为油耗，构建等效燃油消耗函数，通过实时在线寻优确定最优发动机工作点，在保证 SOC 约束的前提下最小化瞬时等效燃油消耗率。
+        </p>
+        <div class="formula-block">
+          H(t) = ṁ_fuel(t) + s(t) · P_bat(t) / Q_lhv<br/><br/>
+          s(t) = s₀ · exp(λ · (SOC_ref − SOC(t)))
+        </div>
+        <div class="formula-caption">等效哈密顿函数（H）及等效因子自适应调整</div>
+        <p>其中：</p>
+        <ul>
+          <li><em>ṁ_fuel</em>：发动机瞬时油耗率（kg/s）</li>
+          <li><em>s(t)</em>：等效因子，根据 SOC 偏差自适应调整</li>
+          <li><em>P_bat</em>：电池功率（放电为正，充电为负）</li>
+          <li><em>Q_lhv</em>：燃油低热值（43.1 MJ/kg）</li>
+          <li><em>λ</em>：调节系数，用于控制 SOC 维护力度</li>
+        </ul>
+        <p>
+          通过离线标定发动机万有特性曲线，将最优工作点提前存储为查找表，实现 ECMS 在线实时优化的计算效率。
+        </p>
+      </div>
+    </div>
+
+    <div id="tab-soc" class="tab-content">
+      <div class="strategy-detail">
+        <h3>电池 SOC 主动维护算法</h3>
+        <p>
+          为防止高强度间歇作业下电池 SOC 过度波动，设计了基于 PI 反馈的 SOC 主动维护算法，动态调整增程器目标发电功率，将 SOC 维持在预设目标区间。
+        </p>
+        <div class="formula-block">
+          ΔP_gen = K_p · e_SOC(t) + K_i · ∫e_SOC(t) dt<br/><br/>
+          e_SOC(t) = SOC_ref − SOC(t)<br/>
+          P_gen_cmd = P_gen_base + ΔP_gen
+        </div>
+        <div class="formula-caption">SOC 维护 PI 控制律</div>
+        <ul>
+          <li><strong>目标 SOC：</strong>55%（作为稳态维护目标）</li>
+          <li><strong>上限保护：</strong>SOC &gt; 85% 时，增程器停机，防止过充</li>
+          <li><strong>下限保护：</strong>SOC &lt; 25% 时，限制高功率输出，优先充电</li>
+          <li><strong>滞环控制：</strong>引入滞环（±3%）避免频繁启停，延长增程器寿命</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Results ===== -->
+<section id="results">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">七</div>
+      <h2>仿真验证与结果分析</h2>
+      <div class="en">Simulation Validation and Results Analysis</div>
+      <div class="divider"></div>
+    </div>
+
+    <p style="margin-bottom:2rem;color:#555;font-size:0.93rem;">
+      基于 MATLAB/Simulink 平台，以叉车典型 8 小时作业循环工况为测试场景，对三种策略进行对比仿真：传统燃油叉车基准（Base）、规则控制（Rule-based）和 ECMS 策略。
+    </p>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <h3>🔬 燃油消耗对比</h3>
+        <div class="metric-row">
+          <span class="metric-name">传统燃油叉车（基准）</span>
+          <span class="metric-val">18.5 L/8h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">规则控制策略</span>
+          <span class="metric-val good">9.8 L/8h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">ECMS 策略</span>
+          <span class="metric-val good">7.6 L/8h</span>
+        </div>
+        <div class="bar-chart" style="margin-top:1rem">
+          <div class="bar-item">
+            <div class="bar-label"><span>传统燃油</span><span>100%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#b45309,#d97706)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>规则控制</span><span>53%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:53%;background:linear-gradient(90deg,#2e7d32,#4caf50)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>ECMS</span><span>41%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:41%;background:linear-gradient(90deg,#163a6b,#4a90d9)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <h3>💨 排放性能（CO₂ 当量）</h3>
+        <div class="metric-row">
+          <span class="metric-name">传统燃油叉车</span>
+          <span class="metric-val">48.1 kg/8h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">规则控制策略</span>
+          <span class="metric-val good">25.5 kg/8h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">ECMS 策略</span>
+          <span class="metric-val good">19.8 kg/8h</span>
+        </div>
+        <div class="bar-chart" style="margin-top:1rem">
+          <div class="bar-item">
+            <div class="bar-label"><span>传统燃油</span><span>100%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#b45309,#d97706)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>规则控制</span><span>53%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:53%;background:linear-gradient(90deg,#2e7d32,#4caf50)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>ECMS</span><span>41%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:41%;background:linear-gradient(90deg,#163a6b,#4a90d9)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <h3>⚙️ 动力性能指标</h3>
+        <div class="metric-row">
+          <span class="metric-name">最大爬坡度</span>
+          <span class="metric-val good">≥ 20%</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">满载最高车速</span>
+          <span class="metric-val good">19 km/h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">0→15 km/h 加速时间</span>
+          <span class="metric-val good">4.2 s</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">起升速度（满载）</span>
+          <span class="metric-val good">0.36 m/s</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">SOC 波动范围</span>
+          <span class="metric-val good">±5%（ECMS）</span>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <h3>🔋 SOC 维护效果</h3>
+        <div class="metric-row">
+          <span class="metric-name">规则策略 SOC 均值</span>
+          <span class="metric-val warn">53.2%</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">ECMS 策略 SOC 均值</span>
+          <span class="metric-val good">55.1%</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">规则策略 SOC 标准差</span>
+          <span class="metric-val warn">8.7%</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">ECMS 策略 SOC 标准差</span>
+          <span class="metric-val good">4.3%</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">SOC 越限次数（8h）</span>
+          <span class="metric-val good">0 次</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f0f4fa;border-radius:8px;padding:1.2rem 1.5rem;margin-top:1rem;">
+      <p style="font-size:0.88rem;color:#444;">
+        📊 <strong>综合结论：</strong>相较于传统燃油叉车，ECMS 策略可降低油耗约 <strong>59%</strong>，CO₂ 排放减少约 <strong>59%</strong>；相较于规则控制策略，ECMS 进一步节油 <strong>22.4%</strong>，SOC 波动标准差降低 <strong>50.6%</strong>，发动机工作点高效区占比提升至 <strong>87.3%</strong>。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Conclusion ===== -->
+<section id="conclusion">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">八</div>
+      <h2>结论与展望</h2>
+      <div class="en">Conclusions and Future Prospects</div>
+      <div class="divider"></div>
+    </div>
+
+    <ol class="conclusion-list">
+      <li><p>完成了中小型混动叉车串联增程系统的总体方案设计，确定了发动机—发电机组、动力电池及驱动电机的关键参数，验证了系统在典型叉车工况下满足动力性能指标的可行性。</p></li>
+      <li><p>建立了基于规则的分层能量管理控制策略，将整车运行模式划分为纯电、增程、功率跟随及制动回馈四种模式，通过状态机逻辑实现平滑模式切换，确保了系统稳定运行。</p></li>
+      <li><p>提出了自适应等效因子的 ECMS 优化策略，结合电池 SOC 反馈实时调整等效因子，在保证 SOC 约束的同时实现了发动机工作点向高效区的持续引导，综合节油效率优于规则控制策略。</p></li>
+      <li><p>设计了基于 PI 反馈的 SOC 主动维护算法，引入滞环控制有效抑制了增程器的频繁启停，延长了关键部件使用寿命，SOC 波动标准差相比规则策略降低约 50%。</p></li>
+      <li><p>通过 MATLAB/Simulink 仿真平台的多工况对比验证，所提 ECMS 策略较传统燃油叉车降低油耗约 59%，CO₂ 排放显著改善，同时动力响应良好，满足叉车作业动力性要求。</p></li>
+    </ol>
+
+    <h3 style="color:#163a6b;margin:2.5rem 0 1rem;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;">主要创新点</h3>
+    <div class="innovation-grid">
+      <div class="innovation-card">
+        <div class="i-num">01</div>
+        <h4>面向叉车工况的参数匹配方法</h4>
+        <p>针对叉车频繁启停、间歇重载的特殊工作特性，提出了兼顾动力性与经济性的部件参数协同匹配方法。</p>
+      </div>
+      <div class="innovation-card">
+        <div class="i-num">02</div>
+        <h4>自适应等效因子 ECMS</h4>
+        <p>基于 SOC 偏差反馈动态调整等效因子，实现 ECMS 在无全局路况信息条件下对 SOC 轨迹的实时维护。</p>
+      </div>
+      <div class="innovation-card">
+        <div class="i-num">03</div>
+        <h4>滞环 SOC 主动维护控制</h4>
+        <p>引入滞环机制的 PI 控制算法，在抑制 SOC 波动的同时显著减少增程器启停频次，平衡整机可靠性与经济性。</p>
+      </div>
+    </div>
+
+    <!-- Future Prospects -->
+    <div class="prospects-section">
+      <h3>研究展望</h3>
+      <div class="prospect-grid">
+        <div class="prospect-card">
+          <div class="p-icon">🤖</div>
+          <h4>强化学习自适应策略</h4>
+          <p>后续可引入基于强化学习（RL）的自适应能量管理策略，进一步提升策略对工况变化的自适应能力，摆脱对离线标定参数的依赖。</p>
+        </div>
+        <div class="prospect-card">
+          <div class="p-icon">🌐</div>
+          <h4>IoT 预见性能量管理</h4>
+          <p>可结合工厂物联网（IoT）数据，实现基于路径预测的预见性能量管理（Predictive EMS），利用先验调度信息进一步优化 SOC 轨迹规划。</p>
+        </div>
+        <div class="prospect-card">
+          <div class="p-icon">🌡️</div>
+          <h4>热管理与余热回收</h4>
+          <p>深化发动机热管理与余热回收研究，探索将排气余热用于电池热管理或辅助供暖，进一步提升整车系统综合能效。</p>
+        </div>
+        <div class="prospect-card">
+          <div class="p-icon">🔬</div>
+          <h4>HIL 与整车实验验证</h4>
+          <p>开展硬件在环（HIL）测试和整车台架实验验证，将仿真研究成果推向工程化应用转化，推动增程叉车产品的落地量产。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== References ===== -->
+<section id="references">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-number">九</div>
+      <h2>参考文献</h2>
+      <div class="en">References</div>
+      <div class="divider"></div>
+    </div>
+
+    <ol class="ref-list">
+      <li data-num="[1]">王庆年, 王伟华, 宋大凤, 等. 混合动力电动汽车动力系统设计及控制 [M]. 北京: 机械工业出版社, 2014.</li>
+      <li data-num="[2]">Sun C, Hu X, Moura S J, et al. Velocity Predictors for Predictive Energy Management in Hybrid Electric Vehicles [J]. IEEE Transactions on Control Systems Technology, 2015, 23(3): 1197–1204.</li>
+      <li data-num="[3]">Paganelli G, Guerra T M, Delprat S, et al. Simulation and Assessment of Power Control Strategies for a Parallel Hybrid Car [J]. Proceedings of the Institution of Mechanical Engineers, Part D: Journal of Automobile Engineering, 2000, 214(7): 705–717.</li>
+      <li data-num="[4]">Onori S, Serrao L, Rizzoni G. Hybrid Electric Vehicles: Energy Management Strategies [M]. London: Springer, 2016.</li>
+      <li data-num="[5]">林歆悠, 朱绍鹏, 吴超仲. 插电式混合动力汽车能量管理综述 [J]. 中国公路学报, 2019, 32(6): 1–19.</li>
+      <li data-num="[6]">国家质量监督检验检疫总局. GB/T 20059-2006 工业叉车 能量利用率标准 [S]. 北京: 中国标准出版社, 2006.</li>
+      <li data-num="[7]">Xu L, Mueller C D, Li J, et al. Multi-Objective Component Sizing Based on Optimal Energy Management Strategy of Fuel Cell Electric Vehicles [J]. Applied Energy, 2015, 157: 664–674.</li>
+      <li data-num="[8]">周英姿, 杨成群, 钟勇. 增程式电动汽车能量管理策略研究综述 [J]. 汽车技术, 2020, (7): 1–9.</li>
+      <li data-num="[9]">Musardo C, Rizzoni G, Guezennec Y, et al. A-ECMS: An Adaptive Algorithm for Hybrid Electric Vehicle Energy Management [J]. European Journal of Control, 2005, 11(4–5): 509–524.</li>
+      <li data-num="[10]">李朝杰, 张炳力, 赵韩. 串联混合动力叉车动力系统参数匹配研究 [J]. 合肥工业大学学报（自然科学版）, 2018, 41(3): 310–315.</li>
+      <li data-num="[11]">王军年, 秦大同, 许思传. 串联混合动力汽车能量管理优化策略 [J]. 汽车工程, 2010, 32(4): 296–301.</li>
+      <li data-num="[12]">国家标准化管理委员会. GB/T 2589-2020 综合能耗计算通则 [S]. 北京: 中国标准出版社, 2020.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>
+    <strong>基于中小型混动叉车增程系统设计及其控制策略研究</strong>
+  </p>
+  <p style="margin-top:0.4rem;">
+    Design and Control Strategy Research of Extended Range System for Small and Medium-Sized Hybrid Forklifts
+  </p>
+  <p style="margin-top:1rem; font-size:0.76rem; color:#4a6a8a;">
+    硕士学位论文展示页 · Master's Thesis Presentation
+  </p>
+</footer>
+
+<script>
+  function switchTab(e, tabId) {
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(function(tc) {
+      tc.classList.remove('active');
+    });
+    e.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // Animate bar fills on scroll
+  let animated = false;
+  function animateBars() {
+    if (animated) return;
+    var resultsSection = document.getElementById('results');
+    var rect = resultsSection.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.85) {
+      animated = true;
+    }
+  }
+  window.addEventListener('scroll', animateBars);
+  animateBars();
+</script>
+</body>
+</html>
