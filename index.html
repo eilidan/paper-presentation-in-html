@@ -377,6 +377,16 @@
       font-style: italic;
       font-family: Georgia, serif;
     }
+    /* Reusable class for table caption headers (used on <caption> elements) */
+    .table-caption-header {
+      caption-side: top;
+      text-align: left;
+      font-size: 0.88rem;
+      color: #163a6b;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-weight: 600;
+      padding-bottom: 0.5rem;
+    }
 
     /* ===== Background ===== */
     #background { background: #f4f1eb; }
@@ -1018,7 +1028,7 @@
       </div>
 
       <table class="data-table" style="margin-top:1.5rem;">
-        <caption style="caption-side:top;text-align:left;font-size:0.88rem;color:#163a6b;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;font-weight:600;padding-bottom:0.5rem;">
+        <caption class="table-caption-header">
           表 3-1　叉车典型工况特征参数汇总
         </caption>
         <thead>
@@ -1085,7 +1095,7 @@
       </p>
 
       <table class="data-table">
-        <caption style="caption-side:top;text-align:left;font-size:0.88rem;color:#163a6b;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;font-weight:600;padding-bottom:0.5rem;">
+        <caption class="table-caption-header">
           表 3-2　三种混合动力构型对比分析
         </caption>
         <thead>
@@ -1652,7 +1662,8 @@ E_min = P_avg × t_pure_EV / η_bat<br/>
       tc.classList.remove('active');
     });
     e.currentTarget.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
+    var targetTab = document.getElementById(tabId);
+    if (targetTab) targetTab.classList.add('active');
   }
 
   // Animate bar fills on scroll
